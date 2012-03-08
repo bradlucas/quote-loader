@@ -41,6 +41,36 @@
        {:symbol sym :date (:date q) :open (:open q) :high (:high q) :low (:low q) :close (:close q) :vol (:vol q) :adjclose (:adjclose q)})))
 
 
+(defn insert-quote1
+  "Insert or update a quote passed in as a map.
+We can improve the readability of the code by using assoc to build a new map to mass into update-or-insert-values. Realizing that the new map will have all the same keys as our parameter sym with the addition of a new key value of :sumbol lets us use assoc to build the new map with (assoc q :symbol sym)
+"
+  [sym q]
+    (sql/with-connection database-dev-settings
+      (sql/update-or-insert-values
+       :quote
+       ["symbol=? and date=?" sym (:date q)]
+         (assoc q :symbol sym))))
+
+
+(defn insert-quote2
+  "Insert or update a quote passed in as a map.
+Destructoring alls you to create variables of the map's value as we pass the map into our function. With this we create variables sym, date, open, high, low, close, vol and adjclose upon entering our function. Then when we create a map to pass to the update-or-insert-values we are creating one with values rather than pulling apart our map in multiple calls.
+"
+  [sym {date :date
+        open :open
+        high :high
+        low :low
+        close :close
+        vol :vol
+        adjclose :adjclose}]
+  (sql/with-connection database-dev-settings
+    (sql/update-or-insert-values
+     :quote
+     ["symbol=? and date=?" sym date]
+     {:symbol sym :date date :open open :high high :low low :close close :vol vol :adjclose adjclose})))
+
+
 (defn load-historical-quotes [sym]
   (let [url (build-url sym)]
     (with-open [rdr (io/reader url)]
