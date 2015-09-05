@@ -9,7 +9,7 @@
   (str "http://ichart.finance.yahoo.com/table.csv?s=" sym "&ignore=.csv"))
 
 (def db-host "localhost")
-(def db-port 8889)
+(def db-port 3306)           ;; check this on your system could be another number, ie 8889
 (def db-name "quote")
 (def db-user "tester")
 (def db-pwd "password")
