@@ -1,41 +1,41 @@
-quote-loader
+# quote-loader
 ========================================
 
-A simple yahoo quote loader described in the article at http://beaconhill.com/solutions/kb/clojure/loading-data-with-clojure.html.
+A simple yahoo quote loader described in the article at http://beaconhilltechnologysolutions.com/solutions/kb/clojure/loading-data-with-clojure.html.
 
-Setup
+# Setup
 ========================================
 
 The example requires that you have a database. For this example MySQL is assumed.
 
 See the init.sql and table.sql files in the sql directory. The init.sql will create a quote database, a test user and the quote table required for the example.
 
-Example Usage
+# Example Usage
 ========================================
 
 With your quote database setup the following should download and load stock quotes from Yahoo.
 
 1. Build standalone version with 'lein ubuerjar'
-2. From the command line enter 'java -jar quote-loader-1.0.0-standalone.jar'
+2. From the command line enter 'java -jar target/quote-loader-1.0.0-standalone.jar'
    followed by one or more stock symbols.
-3. For example, java -jar quote-loader-1.0.0-standalone.jar goog aapl
+3. For example, java -jar target/quote-loader-1.0.0-standalone.jar goog aapl
 4. Look in your quote table.
    select * from quote where symbol='goog';
    select * from quote where symbol='aapl
 
-Comment
+# Comment
 ========================================
 
 Currently there is no error checking for valid symbols so for now only put in valid symbols.
 
 
-Change Log
+# Change Log
 ========================================
 
 * Version 1.0.0
 
 
-Copyright and License
+# Copyright and License
 ========================================
 
 Copyright (c) Brad Lucas, 2012. All rights reserved.  The use and
