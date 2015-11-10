@@ -9,7 +9,7 @@
   (str "http://ichart.finance.yahoo.com/table.csv?s=" sym "&ignore=.csv"))
 
 (def db-host "localhost")
-(def db-port 3306)           ;; check this on your system could be another number, ie 8889
+(def db-port 3306) ;; WAMP == 3306 MAMP == 8889
 (def db-name "quote")
 (def db-user "tester")
 (def db-pwd "password")
@@ -31,14 +31,22 @@
 (defn valid-data [str]
   (Character/isDigit (first str)))
 
+
 (defn insert-quote
   "Insert or update a quote passed in as a map"
   [sym q]
-    (sql/with-connection database-dev-settings
-      (sql/update-or-insert-values
-       :quote
-       ["symbol=? and date=?" sym (:date q)]
-       {:symbol sym :date (:date q) :open (:open q) :high (:high q) :low (:low q) :close (:close q) :vol (:vol q) :adjclose (:adjclose q)})))
+  (sql/insert! database-dev-settings :quote
+               {:symbol sym :date (:date q) :open (:open q) :high (:high q) :low (:low q) :close (:close q) :vol (:vol q) :adjclose (:adjclose q)}))
+
+
+(defn insert-quote0
+  "Insert or update a quote passed in as a map"
+  [sym q]
+  (sql/update! database-dev-settings
+                               :quote
+                               ["symbol=? and date=?" sym (:date q)]
+                               {:symbol sym :date (:date q) :open (:open q) :high (:high q) :low (:low q) :close (:close q) :vol (:vol q) :adjclose (:adjclose q)})
+)
 
 
 (defn insert-quote1
@@ -46,11 +54,10 @@
 We can improve the readability of the code by using assoc to build a new map to mass into update-or-insert-values. Realizing that the new map will have all the same keys as our parameter sym with the addition of a new key value of :sumbol lets us use assoc to build the new map with (assoc q :symbol sym)
 "
   [sym q]
-    (sql/with-connection database-dev-settings
-      (sql/update-or-insert-values
-       :quote
-       ["symbol=? and date=?" sym (:date q)]
-         (assoc q :symbol sym))))
+  (sql/update! database-dev-settings
+                               :quote
+                               ["symbol=? and date=?" sym (:date q)]
+                               (assoc q :symbol sym)))
 
 
 (defn insert-quote2
@@ -64,11 +71,10 @@ Destructoring alls you to create variables of the map's value as we pass the map
         close :close
         vol :vol
         adjclose :adjclose}]
-  (sql/with-connection database-dev-settings
-    (sql/update-or-insert-values
-     :quote
-     ["symbol=? and date=?" sym date]
-     {:symbol sym :date date :open open :high high :low low :close close :vol vol :adjclose adjclose})))
+  (sql/update! database-dev-settings
+                               :quote
+                               ["symbol=? and date=?" sym date]
+                               {:symbol sym :date date :open open :high high :low low :close close :vol vol :adjclose adjclose}))
 
 
 (defn load-historical-quotes [sym]
@@ -84,9 +90,19 @@ Destructoring alls you to create variables of the map's value as we pass the map
 
 (defn process-symbols [lst]
   (doseq [sym lst]
-   (load-historical-quotes sym)))
+    (println "entering process-symbols")
+    (load-historical-quotes sym)
+    (println "exiting process-symbols")
+    ))
 
 (defn -main [& args]
   ;; accept a list of stock symbols as arguments otherwise print a usage statement
   (if args (process-symbols args)
       (print-usage)))
+
+
+(defn query-quote-table 
+  "Simple select * from quote table to see the table's contents"
+  []
+  (let [results (sql/query database-dev-settings "select * from quote")]
+    (dorun (map println results))))

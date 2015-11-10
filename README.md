@@ -3,6 +3,9 @@
 
 A simple yahoo quote loader described in the article at http://beaconhilltechnologysolutions.com/solutions/kb/clojure/loading-data-with-clojure.html.
 
+The project has been updated since the article. See the notes below in the Change Log
+
+
 # Setup
 ========================================
 
@@ -32,7 +35,18 @@ Currently there is no error checking for valid symbols so for now only put in va
 # Change Log
 ========================================
 
-* Version 1.0.0
+* Version 1
+
+* Version 2
+
+The java.jdbc library changed it's API and removed with-connection
+The new since 0.3.0 has the db connection information passed as a parameter
+@see http://stackoverflow.com/questions/22586804/with-connection-what-happened
+
+project.clj [org.clojure/java.jdbc "0.4.2"]
+core.clj change the sql/insert! and sql/update! calls to remove with-connection
+
+
 
 
 # Copyright and License
