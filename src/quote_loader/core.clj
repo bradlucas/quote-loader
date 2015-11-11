@@ -11,17 +11,20 @@
 ;; Data Downloading
 ;; ----------------------------------------------------------------------------------------------------
 
+(defn clean-symbol
+  [sym]
+  (str/trim (str/lower-case sym)))
+
 (defn build-url [sym]
   (str "http://ichart.finance.yahoo.com/table.csv?s=" sym "&ignore=.csv"))
 
 (defn download-historical-quotes 
   "Build the url to get the quotes for 'sym' and return the results"
   [sym]
-  (let [url (build-url sym)
+  (let [sym (clean-symbol sym)
+        url (build-url sym)
         filename (str sym ".csv")
         result []]
-    (println filename)
-    (println url)
     (try 
       (with-open [rdr (io/reader url)]
         ;; realize the sequence returned from reader so we can use the data outside of this routine
@@ -95,7 +98,8 @@ Destructoring alls you to create variables of the map's value as we pass the map
                                {:symbol sym :date date :open open :high high :low low :close close :vol vol :adjclose adjclose}))
 
 (defn load-historical-quotes [sym]
-  (let [rows (download-historical-quotes sym)]
+  (let [sym (clean-symbol sym)
+        rows (download-historical-quotes sym)]
     ;; use doseq to effect the side-effect of insert-quote
     ;; ignore the first line, header by calling (rest rows)
     (doseq [row (rest rows)]
@@ -114,17 +118,17 @@ Destructoring alls you to create variables of the map's value as we pass the map
    (let [results (sql/query database-dev-settings (format "select * from quote where symbol = '%s' " sym))]
      (dorun (map println results)))))
 
+(defn delete-quotes
+  "Truncate the quote table or remove quotes by symbol"
+  ([] (sql/delete! database-dev-settings :quote []))
+  ([sym] (sql/delete! database-dev-settings :quote ["symbol = ?" sym])))
+
 (defn list-symbols
   "Return the distinct list of symbols in the quote table"
   []
   (let [results (sql/query database-dev-settings "select distinct(symbol) from quote")
         symbols (map (fn [q] (:symbol q)) results)]
     (dorun (map println symbols))))
-
-(defn delete-quotes
-  "Truncate the quote table or remove quotes by symbol"
-  ([] (sql/delete! database-dev-settings :quote []))
-  ([sym] (sql/delete! database-dev-settings :quote ["symbol = ?" sym])))
 
 (defn print-usage []
   (println "quote-loader SYMBOL"))
@@ -138,15 +142,46 @@ Destructoring alls you to create variables of the map's value as we pass the map
     (dorun (pmap (fn [sym] (load-historical-quotes sym)) lst))
     (shutdown-agents)))
 
+(defn print-usage [options-summary]
+  (println (->> [""
+                 "Usage: quote-loader [options] [symbols]"
+                 ""
+                 "Options:"
+                 options-summary
+                 ""
+                 "Symbols:"
+                 "Optional list of symbols to load"
+                 "Use -f option as an alternative to load a larger number of symbols"
+                 ""]
+                (clojure.string/join \newline))))
 
-
+(defn load-symbol-file 
+  "Read a file of symbols and return them in a sequence"
+  [filename]
+  (with-open [rdr (io/reader filename)]
+    (filter #(not (empty? %)) (doall (line-seq rdr)))))
 
 (defn -main [& args]
-  ;; accept a list of stock symbols as arguments otherwise print a usage statement
-  (if args 
-    (let [time-msg (with-out-str (time (process-symbols-sequential args)))]
-      (println time-msg))
-    (print-usage)))
+  (let [[opts args summary]
+        ;; https://github.com/bradlucas/cmdline/blob/master/src/cmdline/core.clj
+        (cli args
+             ["-p" "--parallel" "Parrallel loading" :flag true :default false]
+             ["-f" "--file-symbols" "File containing symbols to load (overloads symbols passed as args)"]
+             )]
+    ;; if no file-symbols optionand no args show usage because there is nothing to do
+    (if (and (not (:file-symbols opts)) (not (seq args)))
+      (print-usage summary)
+      (do
+        (let [parallel (:parallel opts)
+              symbols (if (:file-symbols opts) (load-symbol-file (:file-symbols opts)) args)]
+          (let [time-msg (with-out-str (time (if parallel (process-symbols-parallel symbols) (process-symbols-sequential symbols))))]
+            (println time-msg)
+            )
+          )
+        )
+      )
+    )
+  )
 
 
 ;; ----------------------------------------------------------------------------------------------------
@@ -159,19 +194,22 @@ Destructoring alls you to create variables of the map's value as we pass the map
 ;;   truncate quote, delete from quote where symbol
 ;;   list distinct symbols
 ;; parallel version, default to sequential
-;;
 ;; file loading option
 ;; command line options
 ;;  seq/par
 ;;  db functions
+;; default to lower case symbol in all cases
 ;;
+;; command line command for sql functions
+;;   -c select-quotes [SYM]
+;;   -c delete-quotes [SYM]
+;;   -c list-smbols
 ;;
 ;; connection pooling
 ;;
-;; default to lower case symbol in all cases
 ;; document different insert/update functions and test each
 ;;
 ;;   
-
+;;
 ;; http://clojure-doc.org/articles/ecosystem/java_jdbc/home.html
 ;; http://clojure.github.io/java.jdbc/#clojure.java.jdbc/query
