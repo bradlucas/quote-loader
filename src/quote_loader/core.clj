@@ -6,7 +6,6 @@
             [clojure.tools.cli :refer [cli]])
   (:gen-class :main true))
 
-
 ;; ----------------------------------------------------------------------------------------------------
 ;; Data Downloading
 ;; ----------------------------------------------------------------------------------------------------
@@ -109,7 +108,7 @@ Destructoring alls you to create variables of the map's value as we pass the map
 ;; Other database
 ;; ----------------------------------------------------------------------------------------------------
 
-(defn select-quote
+(defn select-quotes
   "Simple select * from quote table to see the table's contents"
   ([]
    (let [results (sql/query database-dev-settings "select * from quote")]
@@ -161,28 +160,34 @@ Destructoring alls you to create variables of the map's value as we pass the map
   (with-open [rdr (io/reader filename)]
     (filter #(not (empty? %)) (doall (line-seq rdr)))))
 
+(defn run-command 
+  [cmd sym]
+  (println "run-command" cmd)
+  (if (= cmd "select") (println "select"))
+  (cond
+    (= cmd "select") (if sym (select-quotes sym) (select-quotes))
+    (= cmd "delete") (if sym (delete-quotes sym) (delete-quotes))
+    (= cmd "symbols") (list-symbols)
+    :else (println "Unknown command. Valid commands are select, delete, symbols")))
+
 (defn -main [& args]
   (let [[opts args summary]
         ;; https://github.com/bradlucas/cmdline/blob/master/src/cmdline/core.clj
         (cli args
              ["-p" "--parallel" "Parrallel loading" :flag true :default false]
              ["-f" "--file-symbols" "File containing symbols to load (overloads symbols passed as args)"]
-             )]
-    ;; if no file-symbols optionand no args show usage because there is nothing to do
-    (if (and (not (:file-symbols opts)) (not (seq args)))
-      (print-usage summary)
-      (do
-        (let [parallel (:parallel opts)
-              symbols (if (:file-symbols opts) (load-symbol-file (:file-symbols opts)) args)]
-          (let [time-msg (with-out-str (time (if parallel (process-symbols-parallel symbols) (process-symbols-sequential symbols))))]
-            (println time-msg)
-            )
-          )
-        )
-      )
-    )
-  )
-
+             ["-c" "--command" "Commands: select [sym], delete [sym], symbols"])]
+    ;; (println "opts: " opts)
+    ;; (println "args: " args)
+    (if (:command opts)
+      (run-command (:command opts) (first args))
+      (if (and (not (:file-symbols opts)) (not (seq args)))
+        (print-usage summary)
+        (do
+          (let [parallel (:parallel opts)
+                symbols (if (:file-symbols opts) (load-symbol-file (:file-symbols opts)) args)]
+            (let [time-msg (with-out-str (time (if parallel (process-symbols-parallel symbols) (process-symbols-sequential symbols))))]
+              (println time-msg))))))))
 
 ;; ----------------------------------------------------------------------------------------------------
 ;; Plan
@@ -199,17 +204,14 @@ Destructoring alls you to create variables of the map's value as we pass the map
 ;;  seq/par
 ;;  db functions
 ;; default to lower case symbol in all cases
-;;
 ;; command line command for sql functions
 ;;   -c select-quotes [SYM]
 ;;   -c delete-quotes [SYM]
 ;;   -c list-smbols
 ;;
+;; TODO
 ;; connection pooling
-;;
 ;; document different insert/update functions and test each
-;;
-;;   
 ;;
 ;; http://clojure-doc.org/articles/ecosystem/java_jdbc/home.html
 ;; http://clojure.github.io/java.jdbc/#clojure.java.jdbc/query
