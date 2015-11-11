@@ -1,9 +1,11 @@
 (ns quote-loader.core
-  (:require [clojure.java.io :as io])
-  (:require [clojure.java.jdbc :as sql])
-  (:require [clojure.string :as str])
-  (:require [clojure-csv.core :as csv])
+  (:require [clojure.java.io :as io]
+            [clojure.java.jdbc :as sql]
+            [clojure.string :as str]
+            [clojure-csv.core :as csv]
+            [clojure.tools.cli :refer [cli]])
   (:gen-class :main true))
+
 
 ;; ----------------------------------------------------------------------------------------------------
 ;; Data Downloading
@@ -103,7 +105,7 @@ Destructoring alls you to create variables of the map's value as we pass the map
 ;; Other database
 ;; ----------------------------------------------------------------------------------------------------
 
-(defn query-quote-table 
+(defn select-quote
   "Simple select * from quote table to see the table's contents"
   ([]
    (let [results (sql/query database-dev-settings "select * from quote")]
@@ -112,6 +114,17 @@ Destructoring alls you to create variables of the map's value as we pass the map
    (let [results (sql/query database-dev-settings (format "select * from quote where symbol = '%s' " sym))]
      (dorun (map println results)))))
 
+(defn list-symbols
+  "Return the distinct list of symbols in the quote table"
+  []
+  (let [results (sql/query database-dev-settings "select distinct(symbol) from quote")
+        symbols (map (fn [q] (:symbol q)) results)]
+    (dorun (map println symbols))))
+
+(defn delete-quotes
+  "Truncate the quote table or remove quotes by symbol"
+  ([] (sql/delete! database-dev-settings :quote []))
+  ([sym] (sql/delete! database-dev-settings :quote ["symbol = ?" sym])))
 
 (defn print-usage []
   (println "quote-loader SYMBOL"))
@@ -136,13 +149,20 @@ Destructoring alls you to create variables of the map's value as we pass the map
 ;; time functions
 ;; separate download of data from db action
 ;; query functions
-;;  default to lower case symbol in all cases
 ;;
-;; document different insert/update functions and test each
+;; database functions
+;;   select *, select symbol
+;;   truncate quote, delete from quote where symbol
+;;   list distinct symbols
+;;
 ;; parallel version
 ;; file loading option
-;; clear database (whole table, just specific ticker)
-
+;; command line options
+;;
+;; default to lower case symbol in all cases
+;; document different insert/update functions and test each
+;;
+;;   
 
 ;; http://clojure-doc.org/articles/ecosystem/java_jdbc/home.html
 ;; http://clojure.github.io/java.jdbc/#clojure.java.jdbc/query
