@@ -1,12 +1,52 @@
 # quote-loader
 ========================================
 
-A simple yahoo quote loader described in the article at http://beaconhilltechnologysolutions.com/solutions/kb/clojure/loading-data-with-clojure.html.
+A simple yahoo quote loader initially described in the article at http://beaconhilltechnologysolutions.com/solutions/kb/clojure/loading-data-with-clojure.html.
 
-The project has been updated since the article. See the notes below in the Change Log
+The project has been updated since the article. Since the article the following enhancements have been made.
+
+- Download function will catch an error if passed an invalid symbol
+- Parallel version of process function as well as original sequential version
+- Command line options
+ - -p for parallel loading (default is sequential)
+ - -f FILENAME for loading from a file containing symbols
+ - -c COMMAND where command is select, delete or symbols
+   - select and delete take an optional [SYMBOL] parameter
+
+# Lein Examples
+========================================
+
+Load all quotes for Google
+
+lein run goog
+
+Load all quotes for symbols in file 'symbols.txt'
+
+lein run -f symbols.txt
+
+Show quotes for Google
+
+lein run -c select goog
+
+Show all quotes in the databsae
+
+lein run -c select
+
+Show a list of the symbols in the database (select distinct(symbol)...)
+
+lein run -c symbols
+
+Delete all goog quotes
+
+lein run -c delete goog
+
+Delete all quotes in the database (truncate quotes)
+
+lein run -c delete
 
 
-# Setup
+
+# Database Setup
 ========================================
 
 The example requires that you have a database. For this example MySQL is assumed.
@@ -45,6 +85,26 @@ The new since 0.3.0 has the db connection information passed as a parameter
 
 project.clj [org.clojure/java.jdbc "0.4.2"]
 core.clj change the sql/insert! and sql/update! calls to remove with-connection
+
+* Version 3
+
+- time functions
+- separate download of data from db action
+- query functions
+- database functions
+-   select *, select symbol
+-   truncate quote, delete from quote where symbol
+-   list distinct symbols
+- parallel version, default to sequential
+- file loading option
+- command line options
+-  seq/par
+-  db functions
+- default to lower case symbol in all cases
+- command line command for sql functions
+-   -c select-quotes [SYM]
+-   -c delete-quotes [SYM]
+-   -c list-smbols
 
 
 
