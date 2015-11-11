@@ -191,26 +191,10 @@ Destructoring alls you to create variables of the map's value as we pass the map
 
 ;; ----------------------------------------------------------------------------------------------------
 ;; Plan
-;; time functions
-;; separate download of data from db action
-;; query functions
-;; database functions
-;;   select *, select symbol
-;;   truncate quote, delete from quote where symbol
-;;   list distinct symbols
-;; parallel version, default to sequential
-;; file loading option
-;; command line options
-;;  seq/par
-;;  db functions
-;; default to lower case symbol in all cases
-;; command line command for sql functions
-;;   -c select-quotes [SYM]
-;;   -c delete-quotes [SYM]
-;;   -c list-smbols
 ;;
 ;; TODO
 ;; connection pooling
+;;    http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
 ;; document different insert/update functions and test each
 ;;
 ;; http://clojure-doc.org/articles/ecosystem/java_jdbc/home.html
