@@ -129,17 +129,22 @@ Destructoring alls you to create variables of the map's value as we pass the map
 (defn print-usage []
   (println "quote-loader SYMBOL"))
 
-(defn process-symbols [lst]
+(defn process-symbols-sequential [lst]
   (doseq [sym lst]
-    (println "entering process-symbols")
-    (load-historical-quotes sym)
-    (println "exiting process-symbols")
-    ))
+    (load-historical-quotes sym)))
+
+(defn process-symbols-parallel [lst]
+  (do 
+    (dorun (pmap (fn [sym] (load-historical-quotes sym)) lst))
+    (shutdown-agents)))
+
+
+
 
 (defn -main [& args]
   ;; accept a list of stock symbols as arguments otherwise print a usage statement
   (if args 
-    (let [time-msg (time (process-symbols args))]
+    (let [time-msg (with-out-str (time (process-symbols-sequential args)))]
       (println time-msg))
     (print-usage)))
 
@@ -149,15 +154,19 @@ Destructoring alls you to create variables of the map's value as we pass the map
 ;; time functions
 ;; separate download of data from db action
 ;; query functions
-;;
 ;; database functions
 ;;   select *, select symbol
 ;;   truncate quote, delete from quote where symbol
 ;;   list distinct symbols
+;; parallel version, default to sequential
 ;;
-;; parallel version
 ;; file loading option
 ;; command line options
+;;  seq/par
+;;  db functions
+;;
+;;
+;; connection pooling
 ;;
 ;; default to lower case symbol in all cases
 ;; document different insert/update functions and test each
