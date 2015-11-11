@@ -80,31 +80,34 @@ Currently there is no error checking for valid symbols so for now only put in va
 * Version 2
 
 The java.jdbc library changed it's API and removed with-connection
+
 The new since 0.3.0 has the db connection information passed as a parameter
+
 @see http://stackoverflow.com/questions/22586804/with-connection-what-happened
 
 project.clj [org.clojure/java.jdbc "0.4.2"]
+
 core.clj change the sql/insert! and sql/update! calls to remove with-connection
 
 * Version 3
 
-- time functions
-- separate download of data from db action
-- query functions
-- database functions
--   select *, select symbol
--   truncate quote, delete from quote where symbol
--   list distinct symbols
-- parallel version, default to sequential
-- file loading option
-- command line options
--  seq/par
--  db functions
-- default to lower case symbol in all cases
-- command line command for sql functions
--   -c select-quotes [SYM]
--   -c delete-quotes [SYM]
--   -c list-smbols
+  - time functions
+  - separate download of data from db action
+  - query functions
+  - database functions
+    -   select *, select symbol
+    -   truncate quote, delete from quote where symbol
+    -   list distinct symbols
+  - parallel version, default to sequential
+  - file loading option
+  - command line options
+    -  seq/par
+    -  db functions
+  - default to lower case symbol in all cases
+  - command line command for sql functions
+    -   -c select-quotes [SYM]
+    -   -c delete-quotes [SYM]
+    -   -c list-smbols
 
 
 
