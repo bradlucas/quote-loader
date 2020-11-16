@@ -1,5 +1,6 @@
 # quote-loader
-========================================
+
+[![Clojars Project](https://img.shields.io/clojars/v/org.clojars.blucas/quote-loader.svg)](https://clojars.org/org.clojars.blucas/quote-loader)
 
 A simple yahoo quote loader initially described in the article at http://beaconhilltechnologysolutions.com/solutions/kb/clojure/loading-data-with-clojure.html.
 
